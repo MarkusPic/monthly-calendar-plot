@@ -1,3 +1,10 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import calendar
+import seaborn as sns
+from math import ceil
+
+
 def monthly_calendar_figure(series, cols=3, height_cm=29.7, width_cm=42.0):
     """
     create a calendar with each month separate. week numbers as rows and day of the week names as columns
@@ -19,9 +26,8 @@ def monthly_calendar_figure(series, cols=3, height_cm=29.7, width_cm=42.0):
     """
     ts = series.copy()
     # ts = series.resmaple('D')
-    import seaborn as sns
-    month_groupby = ts.groupby(ts.index.to_period('M'))
 
+    month_groupby = ts.groupby(ts.index.to_period('M'))
     rows = ceil(month_groupby.ngroups / cols)
     fig, axes = plt.subplots(rows, cols)
     # size is DIN A3
@@ -40,7 +46,7 @@ def monthly_calendar_figure(series, cols=3, height_cm=29.7, width_cm=42.0):
                                         verticalalignment='bottom'
                                         ))
 
-        import calendar
+
         df.columns = list(calendar.day_abbr)
 
         cmap = plt.cm.get_cmap('RdYlGn_r')
