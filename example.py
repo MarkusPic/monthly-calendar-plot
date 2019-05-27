@@ -1,9 +1,3 @@
-# monthly calendar plot
-create a calendar with each month separate. week numbers as rows and day of the week names as columns
-
-![image001](/example.png)
-
-```python
 from monthly_calendar_plot import monthly_calendar_figure
 import pandas as pd
 import numpy as np
@@ -15,4 +9,3 @@ if __name__ == '__main__':
     fig = monthly_calendar_figure(series=daily)
     fig.tight_layout()
     fig.savefig('example.png', dpi=450)
-```
