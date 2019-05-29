@@ -16,7 +16,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='monthly-calendar-analysis',
-    version='0.1',
+    version='0.1beta',
     packages=['monthly_calendar_analysis'],
     url='https://github.com/MarkusPic/monthly-calendar-plot',
     license='MIT',
