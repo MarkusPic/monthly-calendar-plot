@@ -1,36 +1,18 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 import calendar
 import copy
-from math import ceil
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 from matplotlib.colors import Normalize
 
+from math import ceil
 
-def _get_txt_coords(col, row, annotation_fmt, pad):
-    # ha='center', va='center'
-    x = col
-    if annotation_fmt['ha'] == 'center':
-        x -= 0.5
-    elif annotation_fmt['ha'] == 'left':
-        x -= 1 + pad
-    elif annotation_fmt['ha'] == 'right':
-        x -= pad
-
-    y = row
-    if annotation_fmt['va'] == 'center':
-        y += 0.5
-    elif annotation_fmt['va'] == 'bottom':
-        y += 1 - pad
-    elif annotation_fmt['va'] == 'top':
-        y += pad
-    return x, y
+from monthly_calendar_plot.plot import _get_txt_coords
 
 
-def monthly_calendar_figure(series, cols=3, cmap='RdYlGn_r', min_value=0.001, color_unter='lightgray', color_bad='grey',
-                            transpose_figure=True, value_max=None,
-                            month_fmt='%Y - %B', annotation_fmt=None, value_fmt='_.0f'):
+def _icon_monthly_calendar_figure(series, cols=3, cmap='RdYlGn_r', min_value=0.001, color_unter='lightgray', color_bad='grey',
+                                  transpose_figure=True, value_max=None,
+                                  month_fmt='%Y - %B', annotation_fmt=None, value_fmt='_.0f'):
     """
     Create a calendar with each month separate.
     Week numbers as rows and day of the week names as columns.
@@ -54,7 +36,7 @@ def monthly_calendar_figure(series, cols=3, cmap='RdYlGn_r', min_value=0.001, co
     month_groups = series.groupby(series.index.to_period('M'))
     rows = ceil(month_groups.ngroups / cols)
 
-    fig = plt.figure(constrained_layout=True)  # type: plt.Figure
+    fig = plt.figure(tight_layout=True)  # type: plt.Figure
     axes = fig.subplots(rows, cols)
 
     # fig.get_layout_engine().set(h_pad=0.1, w_pad=0.1)
@@ -120,14 +102,17 @@ def monthly_calendar_figure(series, cols=3, cmap='RdYlGn_r', min_value=0.001, co
         ax.grid(which="minor", color="w", linestyle='-', linewidth=2)
 
         ax.set_xticks(np.arange(0.5, 7))
+        # ax.set_xticklabels(['~'] * len(weekday_names))
         ax.set_xticklabels(weekday_names)
         ax.set_ylabel('')
         ax.set_title(month.strftime(month_fmt))
+        # ax.set_title('~~~~')
         ax.xaxis.tick_top()
         # [str(x) for x in ax.get_yticklabels()]
         ax.set_yticks(np.arange(0.5, n_weeks))
         # ax.set_yticklabels([x.get_text()[5:].lstrip('0') for x in ax.get_yticklabels()])
-        ax.set_yticklabels(((df.index - df.index.astype(int)).values*100).round(0).astype(int))
+        ax.set_yticklabels(['--']*len(ax.get_yticks()))
+        # ax.set_yticklabels(((df.index - df.index.astype(int)).values*100).round(0).astype(int))
         ax.set_ylim(6, 0)
         # ax.yaxis.set_ticks_position('none')
         ax.tick_params(axis=u'both', which=u'both', width=0, length=0.01)
@@ -142,10 +127,10 @@ def monthly_calendar_figure(series, cols=3, cmap='RdYlGn_r', min_value=0.001, co
             col = dayofweek
 
             # Day of the month
-            ax.text(col-1+pad, row+pad*2, f'{day:2d}', ha='left', va='top', size=7, family='monospace',
-                    bbox=dict(boxstyle='round', facecolor='white', alpha=0.5, lw=0.2))
+            # ax.text(col-1+pad, row+pad*2, f'{day:2d}', ha='left', va='top', size=7, family='monospace',
+            #         bbox=dict(boxstyle='round', facecolor='white', alpha=0.5, lw=0.2))
 
-            ax.text(*_get_txt_coords(col, row, annotation_fmt, pad), f'{value:{value_fmt}}', **annotation_fmt, color=_get_txt_color(value))
+            ax.text(*_get_txt_coords(col, row, annotation_fmt, pad), '--', **annotation_fmt, color=_get_txt_color(value))
 
         if there_is_a_progress_bar:
             progress_bar.update()
@@ -154,3 +139,22 @@ def monthly_calendar_figure(series, cols=3, cmap='RdYlGn_r', min_value=0.001, co
         progress_bar.close()
 
     return fig
+
+
+if __name__ == '__main__':
+    # Creating random dataset:
+    index = pd.date_range('2022-01-01', '2022-12-31', freq='D')
+    np.random.seed(1)
+    data = np.random.randint(0, 10, size=(len(index)))
+    # making the data to a pandas.Series:
+    daily = pd.Series(index=index, data=data)
+
+    # actual plotting function:
+    fig = _icon_monthly_calendar_figure(series=daily, cols=3, cmap='RdYlGn_r', min_value=0.001, color_unter='lightgray', color_bad='white', annotation_fmt=dict(ha='right'))
+    # 1280×640px
+    fig.set_dpi(100)
+    fig.set_size_inches(h=6.4, w=12.8)
+    fig.suptitle('monthly_calendar_plot', weight='bold', size=32)
+    # fig.tight_layout(pad=0.01, rect=[0.1, 0.1, 0.8, 0.8])
+    # 80 pt inches (1 inch = 100 pt)
+    fig.savefig('icon.png', bbox_inches='tight', pad_inches=1)
